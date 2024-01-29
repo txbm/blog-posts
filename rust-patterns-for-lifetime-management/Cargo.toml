@@ -3,6 +3,36 @@ name = "rust-patterns-for-lifetime-management"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[[bin]]
+name = "example_1"
+path = "./example_1.rs"
+test = false
+bench = false
+
+[[bin]]
+name = "example_2"
+path = "./example_2.rs"
+test = false
+bench = false
+
+[[bin]]
+name = "example_3"
+path = "./example_3.rs"
+test = false
+bench = false
+
+[[bin]]
+name = "example_4"
+path = "./example_4.rs"
+test = false
+bench = false
+
+[[bin]]
+name = "example_5"
+path = "./example_5.rs"
+test = false
+bench = false
 
 [dependencies]
+tokio = { version = "1.35.1", features = ["full"] }
+reqwest = { version = "0.11.23" }
