@@ -1,2 +1,5 @@
-# substack-code
-Runnable code samples for Substack articles
+# Blog posts
+
+Markdown and support content / runnable code for blog posts.
+
+
