@@ -21,7 +21,7 @@ Lifetime management is a core fundamental skill in becoming proficient in using 
 
 Following is a set of patterns designed to help the programmer select an appropriate strategy for ownership or borrowing depending on the goals of the program.
 
-**Reminder: Lifetimes are a core Rust abstraction that address the complexities of memory management inherent in any computer engineering task. Lifetimes serve as an alternative to automated garbage collection or direct pointer manipulation found in other languages.**
+**Reminder: Lifetimes are a core Rust abstraction that address the complexities of [memory management](https://doc.rust-lang.org/book/ch04-01-what-is-ownership.html) inherent in any computer engineering task. Lifetimes serve as an alternative to automated garbage collection or direct pointer manipulation found in other languages.**
 
 We enumerate the following list of five “lifetime patterns” with pointers on when to consider them appropriate.
 
@@ -39,7 +39,7 @@ Use when:
 
 - most or all of the objects originate (and are therefore owned) at the root of the stack
 
-This should likely be your default lifetime strategy in Rust. The reason being that for a linear call chain that is not concurrent, nor performs mutation, data access is temporary and read-only. Functions deeper in the stack can produce unrelated outputs without needing exclusive or permanent control of their inputs.
+This should likely be your [default lifetime strategy](https://doc.rust-lang.org/book/ch04-02-references-and-borrowing.html) in Rust. The reason being that for a linear call chain that is not concurrent, nor performs mutation, data access is temporary and read-only. Functions deeper in the stack can produce unrelated outputs without needing exclusive or permanent control of their inputs.
 
 This forms a natural progression of ownership and lending as execution progresses.
 
@@ -82,7 +82,7 @@ As the comments indicate, this works because the function later in the stack req
 
 If the callee requires neither of those properties nor intends to consume the value (destroy it), then the best solution is likely the immutable shared reference (aka the borrow).
 
-We do not go into mutable borrowing in this guide because the strategies for mutation require additional considerations such as the use of Mutex. We will cover these in an upcoming guide.
+We do not go into mutable borrowing in this guide because the strategies for mutation require additional considerations such as the use of [Mutex](https://doc.rust-lang.org/book/ch16-03-shared-state.html?search=#using-mutexes-to-allow-access-to-data-from-one-thread-at-a-time). We will cover these in an upcoming guide.
 
 ## Borrow Most Things, Clone Some Things
 
@@ -96,7 +96,7 @@ use when:
 
 - the overhead of Clone’ing is deemed acceptable
 
-A slight variation on Pattern #1, this is where the invariants of immutable borrowing are still mostly satisfied BUT there is an exception where a callee must operate on its own copy of a value that must remain owned by a caller earlier in the stack.
+A slight variation on Pattern #1, this is where the invariants of immutable borrowing are still mostly satisfied BUT there is an exception where a callee must [operate on its own copy](https://doc.rust-lang.org/book/ch04-01-what-is-ownership.html#variables-and-data-interacting-with-clone) of a value that must remain owned by a caller earlier in the stack.
 
 The important criteria here is to establish that the object cannot be moved in addition to not being “borrowable”. This is to say that two parts of the program require their very own copy of the same object.
 
@@ -180,17 +180,17 @@ Similar to the prior scenario where the callee requires ownership of the value b
 
 This could be for multiple reasons but the most obvious one is if Clone’ing would be too expensive.
 
-In this case, you may still be borrowing most things, but you specifically identify the object that needs to move and pass it by value to the callee such that ownership transfers away from the caller and into the callee.
+In this case, you may still be borrowing most things, but you specifically identify the object that [needs to move and pass it by value](https://doc.rust-lang.org/book/ch04-01-what-is-ownership.html#variables-and-data-interacting-with-move) to the callee such that ownership transfers away from the caller and into the callee.
 
 From there, either:
 
-- The callee eventually passes ownership back to the caller either as the same value or a derivative value
-
-- The callee drops the object after it goes out of scope and it is never seen nor heard from again
+1. The callee eventually passes ownership back to the caller either as the same value or a derivative value
+2. The callee drops the object after it goes out of scope and it is never seen nor heard from again
 
 In either case, the caller may not reference the object after moving it to the callee. If the callee returns ownership to the caller, the caller may reference the returned value as a new binding. The original binding is no longer valid after a move.
 
-Notably, at the end of the program, Frame #0 is left still owning Y, but no longer owns X because X was moved to Frame #9 and never returned as a new binding. Frame #0 will never know what happened to X :(
+![illustration-3](https://cdn.hashnode.com/res/hashnode/image/upload/v1706585700467/TGwe8GDtF.png?auto=format)
+_Notably, at the end of the program, Frame #0 is left still owning Y, but no longer owns X because X was moved to Frame #9 and never returned as a new binding. Frame #0 will never know what happened to X :(_
 
 We adapt our example again to see a situation where this might occur:
 
@@ -261,8 +261,9 @@ This is a problem because if the buffer reading task owns the data and it goes o
 
 This is a situation where you have to move the value from the task that reads the data to the task that processes the data. Often this is expressed as a closure created with the `move` or `async move` keywords.
 
+![illustration-4](https://cdn.hashnode.com/res/hashnode/image/upload/v1706585816940/-gMblzXjV.png?auto=format)
+_Here we see the major difference being that ownership is transferred from Task #0 to Task #1 but at the end of execution, Task #0 no longer exists. Task #1 has outlived Task #0 and retains sole ownership of X. Had Task #1 attempted to borrow X, it would be impossible to guarantee the reference because Task #0 would have terminated before Task #1. The borrow-checker will not allow this._
 
-Here we see the major difference being that ownership is transferred from Task #0 to Task #1 but at the end of execution, Task #0 no longer exists. Task #1 has outlived Task #0 and retains sole ownership of X. Had Task #1 attempted to borrow X, it would be impossible to guarantee the reference because Task #0 would have terminated before Task #1. The borrow-checker will not allow this.
 
 ```rust
 use reqwest::Client;
@@ -296,27 +297,28 @@ Use when:
 
 - moving and returning ownership is prohibitively complex or precluded by concurrent access requirements
 
-- you are already using locks (Mutex) for atomic mutation
+- you are already using locks ([Mutex](https://doc.rust-lang.org/book/ch16-03-shared-state.html?search=#using-mutexes-to-allow-access-to-data-from-one-thread-at-a-time)) for atomic mutation
 
-This is the most complex case, where we want to neither move nor implicitly borrow. One can think of this approach as a more explicit form of borrowing where we are tracking each reference holder to an object explicitly using a counter that goes up when new references are taken and down when they are dropped.
+This is the most complex case, where we want to neither move nor implicitly borrow. One can think of this approach as a more explicit form of borrowing where we are [tracking each reference](https://doc.rust-lang.org/book/ch15-04-rc.html#using-rct-to-share-data) holder to an object explicitly using a counter that goes up when new references are taken and down when they are dropped.
 
-This has the effect of giving us a little bit of the best of both worlds, with some complexity as a drawback. We get the efficiency of borrowing in that objects that are expensive to Clone are not actually cloned.
+This has the effect of giving us a little bit of the best of both worlds, with some complexity as a drawback. We get the efficiency of borrowing in that objects that are expensive to `Clone` are not actually cloned.
 
-The two main reference counted types in Rust are Rc<T> and Arc<T>. Rc means “reference counted” and Arc means “automatic reference counted”. Calling .clone() on an Rc<T> or Arc<T> does not actually clone the inner value, but rather creates a smart pointer to the inner value that has been allocated on the heap.
+The two main reference counted types in Rust are `Rc<T>` and `Arc<T>`. Rc means ["reference counted"](https://doc.rust-lang.org/std/rc/struct.Rc.html) and Arc means ["atomically reference counted"](https://doc.rust-lang.org/std/sync/struct.Arc.html). Calling .clone() on an Rc<T> or Arc<T> does not actually clone the inner value, but rather creates a smart pointer to the inner value that has been allocated on the heap.
 
-From the perspective of the borrow-checker, the receiver of a Clone’d reference counted type has an “owned” copy of the value because the lifetime of the inner value has been moved outside the stack and onto the heap. The value will remain on the heap until the last reference is dropped thereby ensuring that even if earlier references are dropped, later references will still be valid for as long as needed.
+From the perspective of the borrow-checker, the receiver of a `Clone`’d reference counted type has an “owned” copy of the value because the lifetime of the inner value has been moved outside the stack and onto the heap. The value will remain on the heap until the last reference is dropped thereby ensuring that even if earlier references are dropped, later references will still be valid for as long as needed.
 
-Reference counted type Clones are still shared references — the same way a borrow is — but allow the semantics of an owned value without the overhead of actually copying the value.
+Reference counted type `Clone`s are still shared references — the same way a borrow is — but allow the semantics of an owned value without the overhead of actually copying the value.
 
 It may seem like this should always be the best option (best of both worlds right?) — but in practice the extra boilerplate and complexity is only worth it if the more basic starting strategies prove insufficient.
 
 Reserve this approach for when the lifetimes of your stack frames (scopes) are non-linear and moving or cloning bits is not appropriate for control flow or performance reasons.
 
-Note: reference counting is not without pitfalls if done improperly.
+Note: reference counting is not [without pitfalls if done improperly](https://doc.rust-lang.org/book/ch15-06-reference-cycles.html?highlight=Weak).
 
 Let’s look at when the use of a reference counted type would be the most appropriate solution.
 
-Here we see that Arc::new(X) moves the value from the stack to the heap. Then when clone() is called on the value by subsequent frames, they receive a pointer to the heap location of X and the reference counter goes up or down as references are taken or dropped.
+![illustration-5](https://cdn.hashnode.com/res/hashnode/image/upload/v1706585855561/YMg0n6w35.png?auto=format)
+_Here we see that `Arc::new(X)` moves the value from the stack to the heap. Then when `clone()` is called on the value by subsequent frames, they receive a pointer to the heap location of X and the reference counter goes up or down as references are taken or dropped._
 
 ```rust
 use std::iter;
@@ -365,7 +367,7 @@ fn main() {
 ```
 
 
-We will not cover the mutation case here as that will require introducing Mutex. Stay tuned for more in an upcoming article.
+We will not cover the mutation case here as that will require introducing [Mutex](https://doc.rust-lang.org/book/ch16-03-shared-state.html?search=#using-mutexes-to-allow-access-to-data-from-one-thread-at-a-time). Stay tuned for more in an upcoming article.
 
 **Wrapping Up**
 
@@ -379,6 +381,6 @@ Values that will be used exclusively by a scope that outlives their original sco
 
 If performance constraints are bound and concurrent ownership or mutation is required, reference counting is probably the way to go.
 
-A note on lifetime annotations: this guide does not cover lifetime annotations (<‘a>) because they do not provide actual control over the lifetimes of references at runtime. They are hints to the Rust compiler (borrow checker) to disambiguate certain type signatures where the compiler cannot easily infer the intention of the programmer for which references do and do not share lifetimes.
+A note on lifetime annotations: this guide does not cover [lifetime annotations](https://doc.rust-lang.org/book/ch10-03-lifetime-syntax.html) (`<‘a>`) because they do not provide actual control over the lifetimes of references at runtime. They are hints to the Rust compiler (borrow checker) to disambiguate certain type signatures where the compiler cannot easily infer the intention of the programmer for which references do and do not share lifetimes.
 
 We will do a separate piece on lifetime annotations covering when they are necessary and when you can avoid having to use them altogether.
