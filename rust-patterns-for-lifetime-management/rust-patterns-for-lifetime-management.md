@@ -25,16 +25,6 @@ Following is a set of patterns designed to help the programmer select an appropr
 
 We enumerate the following list of five “lifetime patterns” with pointers on when to consider them appropriate.
 
-[Borrow Everything]()
-
-[Borrow Most Things, Clone Some Things]()
-
-[Borrow Most Things, Move Some Things]()
-
-[Move All the Things]()
-
-[Reference Count Certain Things]()
-
 ## Borrow Everything
 
 Use when:
