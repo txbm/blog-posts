@@ -384,3 +384,13 @@ If performance constraints are bound and concurrent ownership or mutation is req
 A note on lifetime annotations: this guide does not cover [lifetime annotations](https://doc.rust-lang.org/book/ch10-03-lifetime-syntax.html) (`<‘a>`) because they do not provide actual control over the lifetimes of references at runtime. They are hints to the Rust compiler (borrow checker) to disambiguate certain type signatures where the compiler cannot easily infer the intention of the programmer for which references do and do not share lifetimes.
 
 We will do a separate piece on lifetime annotations covering when they are necessary and when you can avoid having to use them altogether.
+
+**Additional Reading**
+
+- [A Journey Through Rust Lifetimes](https://richardanaya.medium.com/a-journey-through-rust-lifetimes-5a08782c7091)
+- [Advanced Lifetimes](https://academy.patika.dev/courses/rust-programming/advanced-lifetimes)
+- [Understand Lifetimes](https://www.lurklurk.org/effective-rust/lifetimes.html)
+- [Rust Doc: Lifetimes](https://doc.rust-lang.org/nomicon/lifetimes.html)
+- [Rust Book 1st Edition: Lifetimes](https://web.mit.edu/rust-lang_v1.25/arch/amd64_ubuntu1404/share/doc/rust/html/book/first-edition/lifetimes.html)
+- [A Complete Guide to Ownership and Borrowing](https://earthly.dev/blog/rust-lifetimes-ownership-burrowing/)
+- [but what is 'a lifetime](https://www.youtube.com/watch?v=gRAVZv7V91Q&t=5s)
