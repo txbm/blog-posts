@@ -96,9 +96,9 @@ use when:
 
 - the overhead of Clone’ing is deemed acceptable
 
-- A slight variation on Pattern #1, this is where the invariants of immutable borrowing are still mostly satisfied BUT there is an exception where a callee must operate on its own copy of a value that must remain owned by a caller earlier in the stack.
+A slight variation on Pattern #1, this is where the invariants of immutable borrowing are still mostly satisfied BUT there is an exception where a callee must operate on its own copy of a value that must remain owned by a caller earlier in the stack.
 
-- The important criteria here is to establish that the object cannot be moved in addition to not being “borrowable”. This is to say that two parts of the program require their very own copy of the same object.
+The important criteria here is to establish that the object cannot be moved in addition to not being “borrowable”. This is to say that two parts of the program require their very own copy of the same object.
 
 ![illustration-2](https://cdn.hashnode.com/res/hashnode/image/upload/v1706585354753/vt3oCq84F.png?auto=format)
 _X is Clone’d while Y is &borrowed. Frame #9 can do whatever it wants with its copy of X (including destroy it) but at the end of execution, Frame #0 still owns the original copy of X as well as the original reference to Y it was lending out._
