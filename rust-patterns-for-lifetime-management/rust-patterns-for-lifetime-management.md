@@ -13,7 +13,7 @@ seoTitle:
 seoDescription: 
 disableComments:
 seriesSlug: 
-enableToc: 
+enableToc: true
 saveAsDraft: true
 ---
 
@@ -25,7 +25,7 @@ Following is a set of patterns designed to help the programmer select an appropr
 
 ## Patterns
 
-We enumerate the following list of five “lifetime patterns” with pointers on when to consider them appropriate and provide runnable code examples:
+We enumerate the following list of five “lifetime patterns” with pointers on when to consider them appropriate.
 
 [Borrow Everything]()
 
