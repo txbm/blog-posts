@@ -21,23 +21,23 @@ Lifetime management is a core fundamental skill in becoming proficient in using 
 
 Following is a set of patterns designed to help the programmer select an appropriate strategy for ownership or borrowing depending on the goals of the program.
 
-Recap: Lifetimes are a core Rust abstraction that address the complexities of memory management inherent in any computer engineering task. Lifetimes serve as an alternative to automated garbage collection or direct pointer manipulation found in other languages.
+**Reminder: Lifetimes are a core Rust abstraction that address the complexities of memory management inherent in any computer engineering task. Lifetimes serve as an alternative to automated garbage collection or direct pointer manipulation found in other languages.**
 
-Patterns
+## Patterns
 
 We enumerate the following list of five “lifetime patterns” with pointers on when to consider them appropriate and provide runnable code examples:
 
-Borrow Everything
+[Borrow Everything]()
 
-Borrow Most Things, Clone Some Things
+[Borrow Most Things, Clone Some Things]()
 
-Borrow Most Things, Move Some Things
+[Borrow Most Things, Move Some Things]()
 
-Move All the Things
+[Move All the Things]()
 
-Reference Count Certain Things
+[Reference Count Certain Things]()
 
-Borrow Everything
+## Borrow Everything
 
 Use when:
 
@@ -55,14 +55,13 @@ This should likely be your default lifetime strategy in Rust. The reason being t
 
 This forms a natural progression of ownership and lending as execution progresses.
 
-
-
 As execution winds the stack, later frames borrow the value owned by the earlier frames. As the stack unwinds, the earlier frame remains the owner of the value until program termination and the later frames have gone out of scope, dropping their borrowed references.
 
 The important thing to understand here is that the beginning and end state are the same for a borrowed value because borrowing does not transfer ownership away from the originating caller.
 
 Code Example:
 
+```rust
 struct Config {
     path: String
 }
@@ -88,6 +87,7 @@ fn main() {
 fn is_valid_config(config: &Config) -> bool {
     !config.path.is_empty()
 }
+```
 
 As the comments indicate, this works because the function later in the stack requires neither exclusive control nor a dedicated copy to perform its work on the config object.
 
@@ -95,23 +95,21 @@ If the callee requires neither of those properties nor intends to consume the va
 
 We do not go into mutable borrowing in this guide because the strategies for mutation require additional considerations such as the use of Mutex. We will cover these in an upcoming guide.
 
-Borrow Most Things, Clone Some Things
+## Borrow Most Things, Clone Some Things
 
 use when:
 
-most objects require only temporary access
+- most objects require only temporary access
 
-a subset of objects need to be consumed permanently
+- a subset of objects need to be consumed permanently
 
-a subset of objects originate deeper in the stack, but are returned to ownership nearer to the stack root
+- a subset of objects originate deeper in the stack, but are returned to ownership nearer to the stack root
 
-the overhead of Clone’ing is deemed acceptable
+- the overhead of Clone’ing is deemed acceptable
 
-A slight variation on Pattern #1, this is where the invariants of immutable borrowing are still mostly satisfied BUT there is an exception where a callee must operate on its own copy of a value that must remain owned by a caller earlier in the stack.
+- A slight variation on Pattern #1, this is where the invariants of immutable borrowing are still mostly satisfied BUT there is an exception where a callee must operate on its own copy of a value that must remain owned by a caller earlier in the stack.
 
-The important criteria here is to establish that the object cannot be moved in addition to not being “borrowable”. This is to say that two parts of the program require their very own copy of the same object.
-
-
+- The important criteria here is to establish that the object cannot be moved in addition to not being “borrowable”. This is to say that two parts of the program require their very own copy of the same object.
 
 X is Clone’d while Y is &borrowed. Frame #9 can do whatever it wants with its copy of X (including destroy it) but at the end of execution, Frame #0 still owns the original copy of X as well as the original reference to Y it was lending out.
 
@@ -119,22 +117,24 @@ Note that again, the start and end states are the same with respect to the start
 
 Let’s modify our prior example to see a situation where that could be necessary:
 
+```rust
+#[derive(Clone)]
 struct Config {
-    path: String
+    path: String,
 }
 
 struct Versioned<O> {
     version: u32,
-    obj: O
+    obj: O,
 }
 
 fn main() {
-    /// `main` function owns `Config` object at beginning of stack.
+    // `main` function owns `Config` object at beginning of stack.
     let config = Config {
-        path: String::from("/etc/nginx/nginx.conf")
+        path: String::from("/etc/nginx/nginx.conf"),
     };
 
-    /**
+    /*
       `config` is `clone`'d to provide `save_config_version` with its
       own copy of `config` so that it can save it into its `Versioned`
       construct. This is necessary because a version must be preserved
@@ -144,19 +144,25 @@ fn main() {
     let version_1 = save_config_version(config.clone());
 
     // `main` function still owns `config` at end of execution
-    
+
     // `save_config_version` owned the copy of `Config` while it was
-    // creating its owned reference of `Versioned`. Then it dropped
+    // creating its owned `Versioned` object. Then it dropped
     // its ownership of `config` and `Versioned` by returning them both
-    // to `main`, bound to `version_1`.
+    // to `main`, bound as `version_1`.
+
+    assert_eq!(version_1.version, 1);
+    assert_eq!(version_1.obj.path, "/etc/nginx/nginx.conf");
 }
 
 fn save_config_version(config: Config) -> Versioned<Config> {
-     Versioned {
+    Versioned {
         version: 1,
-        obj: config
-     }
+        obj: config,
+    }
 }
+```
+
+_Note: the use of the `#[derive(Clone)]` trait macro to ensure that `Config` is Cloneable._
 
 The main reasons Clone’ing is an appropriate strategy here are because:
 
@@ -168,17 +174,17 @@ Therefore, by definition, we must have multiple copies of the data structure to 
 
 We would not be able to do this with mutable borrowing or reference counting because any mutation would be seen by all references and therefore undesirable or disallowed. We cannot move the value because then the original value would be lost.
 
-Borrow Most Things, Move Some Things
+## Borrow Most Things, Move Some Things
 
 Use when:
 
-most objects require only temporary access
+- most objects require only temporary access
 
-a subset of objects need to be consumed permanently
+- a subset of objects need to be consumed permanently
 
-a subset of objects are expensive to Clone
+- a subset of objects are expensive to Clone
 
-a subset of objects are only required by a single function or subprocess
+- a subset of objects are only required by a single function or subprocess
 
 Similar to the prior scenario where the callee requires ownership of the value but for some reason Clone’ing is not an option.
 
@@ -188,50 +194,56 @@ In this case, you may still be borrowing most things, but you specifically ident
 
 From there, either:
 
-The callee eventually passes ownership back to the caller either as the same value or a derivative value
+- The callee eventually passes ownership back to the caller either as the same value or a derivative value
 
-The callee drops the object after it goes out of scope and it is never seen nor heard from again
+- The callee drops the object after it goes out of scope and it is never seen nor heard from again
 
 In either case, the caller may not reference the object after moving it to the callee. If the callee returns ownership to the caller, the caller may reference the returned value as a new binding. The original binding is no longer valid after a move.
-
-
 
 Notably, at the end of the program, Frame #0 is left still owning Y, but no longer owns X because X was moved to Frame #9 and never returned as a new binding. Frame #0 will never know what happened to X :(
 
 We adapt our example again to see a situation where this might occur:
 
+```rust
 struct Config {
     path: String,
-    very_long_vector: Vec<String>
+    very_long_vector: Vec<String>,
 }
 
 struct Versioned<O> {
     version: u32,
-    obj: O
+    obj: O,
 }
 
+const CAPACITY: usize = usize::MAX / 10000000;
+
 fn main() {
-    /// `main` function owns `Config` object at beginning of stack.
+    // `main` function owns `Config` object at beginning of stack.
     let config = Config {
         path: String::from("/etc/nginx/nginx.conf"),
-        very_long_vector: Vec::with_capacity(usize::MAX)
+        very_long_vector: Vec::with_capacity(CAPACITY),
     };
 
-    /// `config` binding is moved into `save_config_version` and
-    /// dropped from this scope. The new `Versioned` representation of
-    /// `config` is returned and stored in the new binding called
-    /// `versioned_config`.
+    // `config` binding is moved into `save_config_version` and
+    // dropped from this scope. The new `Versioned` representation of
+    // `config` is returned and stored in the new binding called
+    // `versioned_config`.
     let versioned_config = save_config_version(config);
 
-    /// `config` is no longer a valid binding at this point 
+    // `config` is no longer a valid binding at this point
+
+    assert_eq!(versioned_config.version, 1);
+    assert_eq!(versioned_config.obj.path, "/etc/nginx/nginx.conf");
+    assert_eq!(versioned_config.obj.very_long_vector.capacity(), CAPACITY);
 }
 
 fn save_config_version(config: Config) -> Versioned<Config> {
-     Versioned {
+    Versioned {
         version: 1,
-        obj: config
-     }
+        obj: config,
+    }
 }
+```
 
 This example shows a situation where the `Config` object is now too expensive to Clone due to the extremely large data structure (giant vector) it contains.
 
@@ -260,16 +272,25 @@ This is a problem because if the buffer reading task owns the data and it goes o
 This is a situation where you have to move the value from the task that reads the data to the task that processes the data. Often this is expressed as a closure created with the `move` or `async move` keywords.
 
 
-
 Here we see the major difference being that ownership is transferred from Task #0 to Task #1 but at the end of execution, Task #0 no longer exists. Task #1 has outlived Task #0 and retains sole ownership of X. Had Task #1 attempted to borrow X, it would be impossible to guarantee the reference because Task #0 would have terminated before Task #1. The borrow-checker will not allow this.
 
-fn main() {
-    let client = HttpClient::new();
-    
-    tokio::spawn(async move {
-        client.get(...)
-    })
+```rust
+use reqwest::Client;
+
+const URL: &str = "https://google.com";
+
+#[tokio::main]
+async fn main() {
+    let client = Client::new();
+
+    tokio::spawn(async move { client.get(URL).send().await.unwrap() })
+        .await
+        .unwrap();
+
+    // `client` is no longer a valid reference at this point
+    // it was permanently moved into the `spawn`'d closure
 }
+```
 
 Here we see that the outer scope `main` representing Task #0 will create a `client` and move it to be owned by Task #1. Since Task #1 is async and `main` does not block, the `main` scope will be dropped immediately after starting Task #1.
 
@@ -279,13 +300,13 @@ Reference Count Certain Things
 
 Use when:
 
-objects are expensive to clone
+- objects are expensive to clone
 
-multiple threads or processes must access the same references concurrently
+- multiple threads or processes must access the same references concurrently
 
-moving and returning ownership is prohibitively complex or precluded by concurrent access requirements
+- moving and returning ownership is prohibitively complex or precluded by concurrent access requirements
 
-you are already using locks (Mutex) for atomic mutation
+- you are already using locks (Mutex) for atomic mutation
 
 This is the most complex case, where we want to neither move nor implicitly borrow. One can think of this approach as a more explicit form of borrowing where we are tracking each reference holder to an object explicitly using a counter that goes up when new references are taken and down when they are dropped.
 
@@ -305,22 +326,28 @@ Note: reference counting is not without pitfalls if done improperly.
 
 Let’s look at when the use of a reference counted type would be the most appropriate solution.
 
-
-
 Here we see that Arc::new(X) moves the value from the stack to the heap. Then when clone() is called on the value by subsequent frames, they receive a pointer to the heap location of X and the reference counter goes up or down as references are taken or dropped.
 
+```rust
+use std::iter;
+use std::sync::Arc;
+
+#[derive(Clone, Debug, PartialEq)]
 struct Config {
-    very_large_vec: Vec<String>
+    very_large_vec: Vec<String>,
 }
 
+#[derive(Clone)]
 struct Worker {
-    config: Arc<Config>
+    config: Arc<Config>,
 }
+
+const CAPACITY: usize = usize::MAX / 10000000;
 
 fn main() {
     // Our `config` object is very large and too expensive to copy.
     let config = Config {
-        very_large_vec: Vec::with_capacity(usize::MAX)
+        very_large_vec: Vec::with_capacity(CAPACITY),
     };
 
     // We move `config` into the `Arc::new` constructor which consumes
@@ -336,10 +363,17 @@ fn main() {
     // Thanks to the use of `Arc<Config>`, we are only storing 1 copy
     // of `Config` on the heap, and passing a counted reference to each
     // `Worker` by calling `clone()` on the `Arc<Config>` object.
-    let workers: Vec<Worker> = iter::repeat(Worker { config.clone() })
-        .take(100)
-        .collect();
+    let workers: Vec<Worker> = iter::repeat(Worker {
+        config: config.clone(),
+    })
+    .take(100)
+    .collect();
+
+    assert_eq!(workers[0].config.very_large_vec.capacity(), CAPACITY);
+    assert_eq!(workers[0].config, workers[1].config);
 }
+```
+
 
 We will not cover the mutation case here as that will require introducing Mutex. Stay tuned for more in an upcoming article.
 
