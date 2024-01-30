@@ -4,7 +4,7 @@ slug: rust-patterns-for-lifetime-management
 tags: rust, programming, coding, software, engineering
 domain: www.sigwait.com
 subtitle: A set of patterns for beginner and intermediate Rust programmers to deliberately choose a strategy for ownership and borrowing depending on the program.
-cover: https://cdn.hashnode.com/res/hashnode/image/upload/v1706581315324/T6C-mL9-i.png?auto=format
+cover: https://cdn.hashnode.com/res/hashnode/image/upload/v1706654502273/t2dc6cO35.webp?auto=format
 ignorePost: false
 publishAs: 
 canonical: 
@@ -384,6 +384,13 @@ If performance constraints are bound and concurrent ownership or mutation is req
 A note on lifetime annotations: this guide does not cover [lifetime annotations](https://doc.rust-lang.org/book/ch10-03-lifetime-syntax.html) (`<‘a>`) because they do not provide actual control over the lifetimes of references at runtime. They are hints to the Rust compiler (borrow checker) to disambiguate type signatures where the compiler cannot easily infer the programmer's intention for which references do and do not share lifetimes.
 
 We will do a separate piece on lifetime annotations and when they are necessary and useful.
+
+**Follow + Subscribe for More!**
+<script async defer src="https://buttons.github.io/buttons.js"></script>
+
+- <a href="https://twitter.com/itsyourcode?ref_src=twsrc%5Etfw" class="twitter-follow-button" data-show-count="false">Follow @itsyourcode</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+- <a class="github-button" href="https://github.com/txbm" data-color-scheme="no-preference: light; light: light; dark: dark;" data-size="large" aria-label="Follow @txbm on GitHub">Follow @txbm</a>
+- <a class="github-button" href="https://github.com/sponsors/txbm" data-color-scheme="no-preference: light; light: light; dark: dark;" data-icon="octicon-heart" data-size="large" aria-label="Sponsor @txbm on GitHub">Sponsor</a>
 
 **Additional Reading**
 
