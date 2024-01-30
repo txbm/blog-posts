@@ -23,8 +23,6 @@ Following is a set of patterns designed to help the programmer select an appropr
 
 **Reminder: Lifetimes are a core Rust abstraction that address the complexities of memory management inherent in any computer engineering task. Lifetimes serve as an alternative to automated garbage collection or direct pointer manipulation found in other languages.**
 
-#### Patterns
-
 We enumerate the following list of five “lifetime patterns” with pointers on when to consider them appropriate.
 
 [Borrow Everything]()
