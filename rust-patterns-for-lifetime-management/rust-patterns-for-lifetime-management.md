@@ -43,7 +43,7 @@ This should likely be your [default lifetime strategy](https://doc.rust-lang.org
 
 This forms a natural progression of ownership and lending as execution progresses.
 
-![illustration-1](https://cdn.hashnode.com/res/hashnode/image/upload/v1706585296140/1P68LeilG.png?auto=format)
+![illustration-1](https://cdn.hashnode.com/res/hashnode/image/upload/v1706645949909/qXGNgTOLn.png?auto=format)
 _As execution winds the stack, later frames borrow the value owned by the earlier frames. As the stack unwinds, the earlier frame remains the owner of the value until program termination and the later frames have gone out of scope, dropping their borrowed references._
 
 The important thing to understand here is that the beginning and end state are the same for a borrowed value because borrowing does not transfer ownership away from the originating caller.
