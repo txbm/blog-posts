@@ -4,7 +4,7 @@ slug: rust-patterns-for-lifetime-management
 tags: rust, programming, coding, software, engineering
 domain: www.sigwait.com
 subtitle: A set of patterns for beginner and intermediate Rust programmers to deliberately choose a strategy for ownership and borrowing depending on the goals of the program.
-cover: https://cdn.hashnode.com/res/hashnode/image/upload/v1706580134570/E0kYS85pI.png?auto=format
+cover: https://cdn.hashnode.com/res/hashnode/image/upload/v1706580240438/dzT9ik-ZT.png?auto=format
 ignorePost: false
 publishAs: 
 canonical: 
