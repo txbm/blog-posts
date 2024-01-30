@@ -43,6 +43,10 @@ This should likely be your default lifetime strategy in Rust. The reason being t
 
 This forms a natural progression of ownership and lending as execution progresses.
 
+| ![illustration-1](https://cdn.hashnode.com/res/hashnode/image/upload/v1706584413657/z_oCpotnz.png?auto=format) |
+|:--:|
+| As execution winds the stack, later frames borrow the value owned by the earlier frames. As the stack unwinds, the earlier frame remains the owner of the value until program termination and the later frames have gone out of scope, dropping their borrowed references. |
+
 As execution winds the stack, later frames borrow the value owned by the earlier frames. As the stack unwinds, the earlier frame remains the owner of the value until program termination and the later frames have gone out of scope, dropping their borrowed references.
 
 The important thing to understand here is that the beginning and end state are the same for a borrowed value because borrowing does not transfer ownership away from the originating caller.
