@@ -100,7 +100,7 @@ A slight variation on Pattern #1, this is where the invariants of immutable borr
 
 The important criteria here is to establish that the object cannot be moved in addition to not being “borrowable”. This is to say that two parts of the program require their very own copy of the same object.
 
-![illustration-2](https://cdn.hashnode.com/res/hashnode/image/upload/v1706585354753/vt3oCq84F.png?auto=format)
+![illustration-2](https://cdn.hashnode.com/res/hashnode/image/upload/v1706646090540/LFnb1EmsL.png?auto=format)
 _X is Clone’d while Y is &borrowed. Frame #9 can do whatever it wants with its copy of X (including destroy it) but at the end of execution, Frame #0 still owns the original copy of X as well as the original reference to Y it was lending out._
 
 Note that again, the start and end states are the same with respect to the starting frame. Even though Frame #9 has its own copy of X to use as needed, Frame #0 still retains ownership of the original copy. This could make sense when X is cheap to copy, and Frame #9 is doing something that requires it to have exclusive control of the values.
@@ -189,7 +189,7 @@ From there, either:
 
 In either case, the caller may not reference the object after moving it to the callee. If the callee returns ownership to the caller, the caller may reference the returned value as a new binding. The original binding is no longer valid after a move.
 
-![illustration-3](https://cdn.hashnode.com/res/hashnode/image/upload/v1706585700467/TGwe8GDtF.png?auto=format)
+![illustration-3](https://cdn.hashnode.com/res/hashnode/image/upload/v1706646107663/wh1G4izwC.png?auto=format)
 _Notably, at the end of the program, Frame #0 is left still owning Y, but no longer owns X because X was moved to Frame #9 and never returned as a new binding. Frame #0 will never know what happened to X :(_
 
 We adapt our example again to see a situation where this might occur:
@@ -261,7 +261,7 @@ This is a problem because if the buffer reading task owns the data and it goes o
 
 This is a situation where you have to move the value from the task that reads the data to the task that processes the data. Often this is expressed as a closure created with the `move` or `async move` keywords.
 
-![illustration-4](https://cdn.hashnode.com/res/hashnode/image/upload/v1706585816940/-gMblzXjV.png?auto=format)
+![illustration-4](https://cdn.hashnode.com/res/hashnode/image/upload/v1706646120906/9I2UroF2x.png?auto=format)
 _Here we see the major difference being that ownership is transferred from Task #0 to Task #1 but at the end of execution, Task #0 no longer exists. Task #1 has outlived Task #0 and retains sole ownership of X. Had Task #1 attempted to borrow X, it would be impossible to guarantee the reference because Task #0 would have terminated before Task #1. The borrow-checker will not allow this._
 
 
@@ -317,7 +317,7 @@ Note: reference counting is not [without pitfalls if done improperly](https://do
 
 Let’s look at when the use of a reference counted type would be the most appropriate solution.
 
-![illustration-5](https://cdn.hashnode.com/res/hashnode/image/upload/v1706585855561/YMg0n6w35.png?auto=format)
+![illustration-5](https://cdn.hashnode.com/res/hashnode/image/upload/v1706646132005/bLIbFMURw.png?auto=format)
 _Here we see that `Arc::new(X)` moves the value from the stack to the heap. Then when `clone()` is called on the value by subsequent frames, they receive a pointer to the heap location of X and the reference counter goes up or down as references are taken or dropped._
 
 ```rust
