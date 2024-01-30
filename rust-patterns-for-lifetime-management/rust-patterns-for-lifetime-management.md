@@ -314,7 +314,7 @@ Reserve this approach for when the lifetimes of your stack frames (scopes) are n
 
 Note: reference counting is not [without pitfalls if done improperly](https://doc.rust-lang.org/book/ch15-06-reference-cycles.html?highlight=Weak).
 
-Let’s look at when using a reference counted type would be the most appropriate solution.
+Let’s look at when using a reference counted type would be an appropriate solution.
 
 ![illustration-5](https://cdn.hashnode.com/res/hashnode/image/upload/v1706646132005/bLIbFMURw.png?auto=format)
 _Here, we see that `Arc::new(X)` moves the value from the stack to the heap. Then, when `clone()` is called on the value by subsequent frames, they receive a pointer to the heap location of X, and the reference counter goes up or down as references are taken or dropped._
