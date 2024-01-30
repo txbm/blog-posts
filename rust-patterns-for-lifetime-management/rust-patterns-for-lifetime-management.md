@@ -387,9 +387,9 @@ We will do a separate piece on lifetime annotations and when they are necessary 
 **Follow + Subscribe for More!**
 <script async defer src="https://buttons.github.io/buttons.js"></script>
 
-- <a href="https://twitter.com/itsyourcode?ref_src=twsrc%5Etfw" class="twitter-follow-button" data-show-count="false">Follow @itsyourcode</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-- <a class="github-button" href="https://github.com/txbm" data-color-scheme="no-preference: light; light: light; dark: dark;" data-size="large" aria-label="Follow @txbm on GitHub">Follow @txbm</a>
-- <a class="github-button" href="https://github.com/sponsors/txbm" data-color-scheme="no-preference: light; light: light; dark: dark;" data-icon="octicon-heart" data-size="large" aria-label="Sponsor @txbm on GitHub">Sponsor</a>
+- <a target="_blank" href="https://twitter.com/itsyourcode?ref_src=twsrc%5Etfw" class="twitter-follow-button" data-show-count="false">Follow @itsyourcode</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+- <a target="_blank" class="github-button" href="https://github.com/txbm" data-color-scheme="no-preference: light; light: light; dark: dark;" data-size="large" aria-label="Follow @txbm on GitHub">Follow @txbm</a>
+- <a target="_blank" class="github-button" href="https://github.com/sponsors/txbm" data-color-scheme="no-preference: light; light: light; dark: dark;" data-icon="octicon-heart" data-size="large" aria-label="Sponsor @txbm on GitHub">Sponsor</a>
 
 **Additional Reading**
 
