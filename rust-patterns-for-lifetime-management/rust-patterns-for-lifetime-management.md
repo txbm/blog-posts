@@ -156,9 +156,8 @@ _Note: the use of the `#[derive(Clone)]` trait macro to ensure that `Config` is 
 
 The main reasons Clone’ing is an appropriate strategy here are because:
 
-The value is cheap to copy (a small struct of primitives)
-
-The program's intended goal is to ensure that the copies of the value can be independently modified (or preserved).
+- The value is cheap to copy (a small struct of primitives)
+- The program's intended goal is to ensure that the copies of the value can be independently modified (or preserved).
 
 Therefore, we must have multiple copies of the data structure to treat independently.
 
