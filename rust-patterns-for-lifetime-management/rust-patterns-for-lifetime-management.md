@@ -23,7 +23,7 @@ Following is a set of patterns designed to help the programmer select an appropr
 
 **Reminder: Lifetimes are a core Rust abstraction that address the complexities of memory management inherent in any computer engineering task. Lifetimes serve as an alternative to automated garbage collection or direct pointer manipulation found in other languages.**
 
-## Patterns
+#### Patterns
 
 We enumerate the following list of five “lifetime patterns” with pointers on when to consider them appropriate.
 
@@ -41,15 +41,15 @@ We enumerate the following list of five “lifetime patterns” with pointers on
 
 Use when:
 
-performance is critical by default
+- performance is critical by default
 
-there is no specific reason why ownership is required
+- there is no specific reason why ownership is required
 
-data structures are expensive to copy
+- data structures are expensive to copy
 
-only a single stack frame will be accessing an object reference at any given moment
+- only a single stack frame will be accessing an object reference at any given moment
 
-most or all of the objects originate (and are therefore owned) at the root of the stack
+- most or all of the objects originate (and are therefore owned) at the root of the stack
 
 This should likely be your default lifetime strategy in Rust. The reason being that for a linear call chain that is not concurrent, nor performs mutation, data access is temporary and read-only. Functions deeper in the stack can produce unrelated outputs without needing exclusive or permanent control of their inputs.
 
@@ -253,7 +253,7 @@ This allows the `save_config_version` function to perform its work, but without 
 
 Now obviously if we wanted to make a second version of this `Config` we would face this problem again. The solution to that problem is more sophisticated and beyond the scope of this guide.
 
-Move All the Things
+## Move All the Things
 
 Use when:
 
@@ -296,7 +296,7 @@ Here we see that the outer scope `main` representing Task #0 will create a `clie
 
 Task #1 can continue to run until completion as it has taken ownership of the `client` needed to perform its work.
 
-Reference Count Certain Things
+## Reference Count Certain Things
 
 Use when:
 
