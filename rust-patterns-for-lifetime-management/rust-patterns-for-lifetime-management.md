@@ -255,9 +255,9 @@ Now obviously if we wanted to make a second version of this `Config` we would fa
 
 Use when:
 
-objects are expensive to Clone
+- objects are expensive to Clone
 
-the inner scope may outlive the outer scope
+- the inner scope may outlive the outer scope
 
 This covers the case where the program requires that you move all of the values because Clone’ing is too expensive and the scope doing the work may outlive the scope of the caller.
 
@@ -375,13 +375,13 @@ fn main() {
 
 We will not cover the mutation case here as that will require introducing Mutex. Stay tuned for more in an upcoming article.
 
-Wrapping Up
+**Wrapping Up**
 
 This guide provides you with a practical framework for planning out your lifetime management approach when designing programs in Rust.
 
-Remember: defaulting to immutable borrowing is usually a good starting point.
+**Remember: defaulting to immutable borrowing is usually a good starting point.**
 
-Values that will be destroyed, returned, or irreversibly transformed are probably good candidates for moving.
+Values that will be **destroyed**, **returned**, or **irreversibly** transformed are probably good candidates for **moving** or **cloning**.
 
 Values that will be used exclusively by a scope that outlives their original scope must be moved into the longer living scope so they can exist after the original scope is dropped.
 
@@ -390,7 +390,3 @@ If performance constraints are bound and concurrent ownership or mutation is req
 A note on lifetime annotations: this guide does not cover lifetime annotations (<‘a>) because they do not provide actual control over the lifetimes of references at runtime. They are hints to the Rust compiler (borrow checker) to disambiguate certain type signatures where the compiler cannot easily infer the intention of the programmer for which references do and do not share lifetimes.
 
 We will do a separate piece on lifetime annotations covering when they are necessary and when you can avoid having to use them altogether.
-
-Subscribe to learn more about advanced computer engineering
-
-
