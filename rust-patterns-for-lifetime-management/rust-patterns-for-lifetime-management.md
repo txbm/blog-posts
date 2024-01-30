@@ -21,7 +21,7 @@ Lifetime management is a core fundamental skill in becoming proficient in using 
 
 Following is a set of patterns designed to help the programmer select an appropriate strategy for ownership or borrowing depending on the goals of the program.
 
-**Reminder: Lifetimes are a core Rust abstraction that address the complexities of [memory management](https://doc.rust-lang.org/book/ch04-01-what-is-ownership.html) inherent in any computer engineering task. Lifetimes serve as an alternative to automated garbage collection or direct pointer manipulation found in other languages.**
+**Reminder: Lifetimes are a core Rust abstraction that addresses the complexities of [memory management](https://doc.rust-lang.org/book/ch04-01-what-is-ownership.html) inherent in any computer engineering task. Lifetimes serve as an alternative to automated garbage collection or direct pointer manipulation found in other languages.**
 
 We enumerate the following list of five “lifetime patterns” with pointers on when to consider them appropriate.
 
@@ -39,12 +39,12 @@ Use when:
 
 - most or all of the objects originate (and are therefore owned) at the root of the stack
 
-This should likely be your [default lifetime strategy](https://doc.rust-lang.org/book/ch04-02-references-and-borrowing.html) in Rust. The reason being that for a linear call chain that is not concurrent, nor performs mutation, data access is temporary and read-only. Functions deeper in the stack can produce unrelated outputs without needing exclusive or permanent control of their inputs.
+This should likely be your [default lifetime strategy](https://doc.rust-lang.org/book/ch04-02-references-and-borrowing.html) in Rust. The reason is that for a linear call chain that is not concurrent, nor performs mutation, data access is temporary and read-only. Functions deeper in the stack can produce unrelated outputs without needing exclusive or permanent control of their inputs.
 
 This forms a natural progression of ownership and lending as execution progresses.
 
 ![illustration-1](https://cdn.hashnode.com/res/hashnode/image/upload/v1706645949909/qXGNgTOLn.png?auto=format)
-_As execution winds the stack, later frames borrow the value owned by the earlier frames. As the stack unwinds, the earlier frame remains the owner of the value until program termination and the later frames have gone out of scope, dropping their borrowed references._
+_As execution winds the stack, later frames borrow the value owned by the earlier frames. As the stack unwinds, the earlier frame remains the owner of the value until program termination. The later frames have gone out of scope, dropping their borrowed references._
 
 The important thing to understand here is that the beginning and end state are the same for a borrowed value because borrowing does not transfer ownership away from the originating caller.
 
@@ -56,7 +56,7 @@ struct Config {
 }
 
 fn main() {
-    // [`main`] function owns [`Config`] object at beginning of stack.
+    // [`main`] function owns [`Config`] object at the beginning of the stack.
     let config = Config {
         path: String::from("/etc/nginx/nginx.conf")
     };
@@ -67,12 +67,12 @@ fn main() {
         false => println!("Invalid config")
     }
 
-    // [`main`] function still owns [`Config`] at end of execution
+    // [`main`] function still owns [`Config`] at the end of execution
 }
 
 /// Checking to see if [`Config.path`] is/not empty does not
-/// require a dedicated copy or exclusive control of the value
-/// so borrowing is the best choice here.
+/// require a dedicated copy or exclusive control of the value.
+/// Borrowing is the best choice here.
 fn is_valid_config(config: &Config) -> bool {
     !config.path.is_empty()
 }
@@ -90,20 +90,20 @@ use when:
 
 - most objects require only temporary access
 
-- a subset of objects need to be consumed permanently
+- a subset of objects that need to be consumed permanently
 
-- a subset of objects originate deeper in the stack, but are returned to ownership nearer to the stack root
+- a subset of objects originate deeper in the stack but are returned to ownership nearer to the stack root
 
 - the overhead of Clone’ing is deemed acceptable
 
-A slight variation on Pattern #1, this is where the invariants of immutable borrowing are still mostly satisfied BUT there is an exception where a callee must [operate on its own copy](https://doc.rust-lang.org/book/ch04-01-what-is-ownership.html#variables-and-data-interacting-with-clone) of a value that must remain owned by a caller earlier in the stack.
+A slight variation on Pattern #1, this is where the invariants of immutable borrowing are still mostly satisfied BUT there is an exception where a callee must [operate on its copy](https://doc.rust-lang.org/book/ch04-01-what-is-ownership.html#variables-and-data-interacting-with-clone) of a value that must remain owned by a caller earlier in the stack.
 
 The important criteria here is to establish that the object cannot be moved in addition to not being “borrowable”. This is to say that two parts of the program require their very own copy of the same object.
 
 ![illustration-2](https://cdn.hashnode.com/res/hashnode/image/upload/v1706646090540/LFnb1EmsL.png?auto=format)
 _X is Clone’d while Y is &borrowed. Frame #9 can do whatever it wants with its copy of X (including destroy it) but at the end of execution, Frame #0 still owns the original copy of X as well as the original reference to Y it was lending out._
 
-Note that again, the start and end states are the same with respect to the starting frame. Even though Frame #9 has its own copy of X to use as needed, Frame #0 still retains ownership of the original copy. This could make sense when X is cheap to copy, and Frame #9 is doing something that requires it to have exclusive control of the values.
+Note that again, the start and end states are the same. Even though Frame #9 has its copy of X to use as needed, Frame #0 still retains ownership of the original copy. This could make sense when X is cheap to copy, and Frame #9 is doing something that requires it to have exclusive control of the values.
 
 Let’s modify our prior example to see a situation where that could be necessary:
 
@@ -119,21 +119,21 @@ struct Versioned<O> {
 }
 
 fn main() {
-    // `main` function owns `Config` object at beginning of stack.
+    // `main` function owns the `Config` object at the beginning of the stack.
     let config = Config {
         path: String::from("/etc/nginx/nginx.conf"),
     };
 
     /*
-      `config` is `clone`'d to provide `save_config_version` with its
-      own copy of `config` so that it can save it into its `Versioned`
+      `config` is `Clone`'d to provide `save_config_version` with
+      a copy of `config` so that it can save it into its `Versioned`
       construct. This is necessary because a version must be preserved
       even if the original copy is changed later on. Therefore, we must
       store a copy of it as the original may be modified.
     */
     let version_1 = save_config_version(config.clone());
 
-    // `main` function still owns `config` at end of execution
+    // `main` function still owns `config` at the end of execution
 
     // `save_config_version` owned the copy of `Config` while it was
     // creating its owned `Versioned` object. Then it dropped
@@ -170,15 +170,15 @@ Use when:
 
 - most objects require only temporary access
 
-- a subset of objects need to be consumed permanently
+- a subset of objects that need to be consumed permanently
 
-- a subset of objects are expensive to Clone
+- a subset of objects are expensive to `Clone`
 
 - a subset of objects are only required by a single function or subprocess
 
-Similar to the prior scenario where the callee requires ownership of the value but for some reason Clone’ing is not an option.
+Similar to the prior scenario where the callee requires ownership of the value but for some reason `Clone` is not an option.
 
-This could be for multiple reasons but the most obvious one is if Clone’ing would be too expensive.
+This could be for multiple reasons but the most obvious one is if `Clone` would be too expensive.
 
 In this case, you may still be borrowing most things, but you specifically identify the object that [needs to move and pass it by value](https://doc.rust-lang.org/book/ch04-01-what-is-ownership.html#variables-and-data-interacting-with-move) to the callee such that ownership transfers away from the caller and into the callee.
 
@@ -208,7 +208,7 @@ struct Versioned<O> {
 const CAPACITY: usize = usize::MAX / 10000000;
 
 fn main() {
-    // `main` function owns `Config` object at beginning of stack.
+    // `main` function owns the `Config` object at the beginning of the stack.
     let config = Config {
         path: String::from("/etc/nginx/nginx.conf"),
         very_long_vector: Vec::with_capacity(CAPACITY),
@@ -239,7 +239,7 @@ This example shows a situation where the `Config` object is now too expensive to
 
 Therefore, when we decide we want to make a versioned representation of it, we allow the versioning function to take exclusive ownership of the value (consume it) and return a new value in its place that we can take new ownership of.
 
-This allows the `save_config_version` function to perform its work, but without the expense of having to provide it with its very own copy of the data structure.
+This allows the `save_config_version` function to perform its work but without the expense of having to provide it with its very own copy of the data structure.
 
 Now obviously if we wanted to make a second version of this `Config` we would face this problem again. The solution to that problem is more sophisticated and beyond the scope of this guide.
 
@@ -251,9 +251,9 @@ Use when:
 
 - the inner scope may outlive the outer scope
 
-This covers the case where the program requires that you move all of the values because Clone’ing is too expensive and the scope doing the work may outlive the scope of the caller.
+This covers the case where the program requires that you move all of the values because Clone’ing is too expensive and the scope that is doing the work may outlive the scope of the caller.
 
-A real example is having two tasks in your program, one that reads data from a socket, and one that processes the data in a longer running computation.
+A real example is having two tasks in your program, one that reads data from a socket, and one that processes the data in a longer-running computation.
 
 The task reading data from the socket could theoretically pass references to the tasks processing the data, but there is a problem with that. If the task processing the data takes longer to complete than the task reading data from the buffer, the processing task will outlive the buffer reading task.
 
@@ -262,7 +262,7 @@ This is a problem because if the buffer reading task owns the data and it goes o
 This is a situation where you have to move the value from the task that reads the data to the task that processes the data. Often this is expressed as a closure created with the `move` or `async move` keywords.
 
 ![illustration-4](https://cdn.hashnode.com/res/hashnode/image/upload/v1706646120906/9I2UroF2x.png?auto=format)
-_Here we see the major difference being that ownership is transferred from Task #0 to Task #1 but at the end of execution, Task #0 no longer exists. Task #1 has outlived Task #0 and retains sole ownership of X. Had Task #1 attempted to borrow X, it would be impossible to guarantee the reference because Task #0 would have terminated before Task #1. The borrow-checker will not allow this._
+_Here we see the major difference being that ownership is transferred from Task #0 to Task #1 but at the end of execution, Task #0 no longer exists. Task #1 has outlived Task #0 and retains sole ownership of X. Had Task #1 attempted to borrow X, it would have been impossible to guarantee the reference because Task #0 would have terminated before Task #1. The borrow-checker will not allow this._
 
 
 ```rust
@@ -279,7 +279,7 @@ async fn main() {
         .unwrap();
 
     // `client` is no longer a valid reference at this point
-    // it was permanently moved into the `spawn`'d closure
+    // It was permanently moved into the `spawn`'d closure
 }
 ```
 
@@ -301,17 +301,17 @@ Use when:
 
 This is the most complex case, where we want to neither move nor implicitly borrow. One can think of this approach as a more explicit form of borrowing where we are [tracking each reference](https://doc.rust-lang.org/book/ch15-04-rc.html#using-rct-to-share-data) holder to an object explicitly using a counter that goes up when new references are taken and down when they are dropped.
 
-This has the effect of giving us a little bit of the best of both worlds, with some complexity as a drawback. We get the efficiency of borrowing in that objects that are expensive to `Clone` are not actually cloned.
+This has the effect of giving us a little bit of the best of both worlds, with some complexity as a drawback. We get the efficiency of borrowing in that objects that are expensive to `Clone` are not physically copied.
 
-The two main reference counted types in Rust are `Rc<T>` and `Arc<T>`. Rc means ["reference counted"](https://doc.rust-lang.org/std/rc/struct.Rc.html) and Arc means ["atomically reference counted"](https://doc.rust-lang.org/std/sync/struct.Arc.html). Calling .clone() on an Rc<T> or Arc<T> does not actually clone the inner value, but rather creates a smart pointer to the inner value that has been allocated on the heap.
+The two main reference counted types in Rust are `Rc<T>` and `Arc<T>`. Rc means ["reference counted"](https://doc.rust-lang.org/std/rc/struct.Rc.html) and Arc means ["atomically reference counted"](https://doc.rust-lang.org/std/sync/struct.Arc.html). Calling .clone() on an Rc<T> or Arc<T> does not physically copy the inner value, but rather creates a smart pointer to the inner value that has been allocated on the heap.
 
 From the perspective of the borrow-checker, the receiver of a `Clone`’d reference counted type has an “owned” copy of the value because the lifetime of the inner value has been moved outside the stack and onto the heap. The value will remain on the heap until the last reference is dropped thereby ensuring that even if earlier references are dropped, later references will still be valid for as long as needed.
 
 Reference counted type `Clone`s are still shared references — the same way a borrow is — but allow the semantics of an owned value without the overhead of actually copying the value.
 
-It may seem like this should always be the best option (best of both worlds right?) — but in practice the extra boilerplate and complexity is only worth it if the more basic starting strategies prove insufficient.
+It may seem like this should always be the best option (best of both worlds right?) — but in practice, the extra boilerplate and complexity are only worth it if the more basic starting strategies prove insufficient.
 
-Reserve this approach for when the lifetimes of your stack frames (scopes) are non-linear and moving or cloning bits is not appropriate for control flow or performance reasons.
+Reserve this approach for when the lifetimes of your stack frames (scopes) are non-linear and moving or cloning bits are not appropriate for control flow or performance reasons.
 
 Note: reference counting is not [without pitfalls if done improperly](https://doc.rust-lang.org/book/ch15-06-reference-cycles.html?highlight=Weak).
 
