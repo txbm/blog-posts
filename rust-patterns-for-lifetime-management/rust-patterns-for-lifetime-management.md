@@ -14,7 +14,7 @@ seoDescription:
 disableComments:
 seriesSlug: 
 enableToc: true
-saveAsDraft: true
+saveAsDraft: false
 ---
 
 Lifetime management is a core fundamental skill in becoming proficient in using Rust.
