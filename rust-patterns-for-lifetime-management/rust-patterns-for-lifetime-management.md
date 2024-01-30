@@ -302,7 +302,7 @@ Reference counting is the most complex technique, where we want to neither move 
 
 We get the efficiency of borrowing with the semantics of ownership as long as we do not mutate the underlying value.
 
-Rust's two primary reference counted types are `Rc<T>` and `Arc<T>`. Rc means ["reference counted"](https://doc.rust-lang.org/std/rc/struct.Rc.html) and Arc means ["atomically reference counted"](https://doc.rust-lang.org/std/sync/struct.Arc.html). Calling .clone() on an Rc<T> or Arc<T> does not physically copy the inner value but instead creates a smart pointer to the heap-allocated inner value.
+Rust's two primary reference counted types are `Rc<T>` and `Arc<T>`. Rc means ["reference counted"](https://doc.rust-lang.org/std/rc/struct.Rc.html) and Arc means ["atomically reference counted"](https://doc.rust-lang.org/std/sync/struct.Arc.html). Calling `.clone()` on an Rc<T> or Arc<T> does not physically copy the inner value but instead creates a smart pointer to the heap-allocated inner value.
 
 From the perspective of the borrow-checker, the receiver of a `Clone`’d reference counted type has an “owned” copy of the value because the lifetime of the inner value has been moved outside the stack and onto the heap. The value will remain on the heap until the last reference drops, ensuring that even if earlier references drop, later references will still be valid for as long as needed.
 
