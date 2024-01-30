@@ -100,7 +100,7 @@ use when:
 
 - The important criteria here is to establish that the object cannot be moved in addition to not being “borrowable”. This is to say that two parts of the program require their very own copy of the same object.
 
-[!illustration-2](https://cdn.hashnode.com/res/hashnode/image/upload/v1706585354753/vt3oCq84F.png?auto=format)
+![illustration-2](https://cdn.hashnode.com/res/hashnode/image/upload/v1706585354753/vt3oCq84F.png?auto=format)
 _X is Clone’d while Y is &borrowed. Frame #9 can do whatever it wants with its copy of X (including destroy it) but at the end of execution, Frame #0 still owns the original copy of X as well as the original reference to Y it was lending out._
 
 Note that again, the start and end states are the same with respect to the starting frame. Even though Frame #9 has its own copy of X to use as needed, Frame #0 still retains ownership of the original copy. This could make sense when X is cheap to copy, and Frame #9 is doing something that requires it to have exclusive control of the values.
